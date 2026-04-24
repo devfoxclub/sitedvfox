@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel Admin - DevFox</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background: #050507;
+      color: #f9f9f9;
+    }
+    .admin-shell {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 24px 80px;
+    }
+    .admin-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .admin-header h1 {
+      font-size: 2.5rem;
+      letter-spacing: -1px;
+    }
+    .admin-header .buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .admin-card {
+      background: rgba(15, 10, 25, 0.9);
+      border: 1px solid rgba(168, 85, 247, 0.18);
+      border-radius: 24px;
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: 0 0 60px rgba(168, 85, 247, 0.08);
+    }
+    .admin-card h2 {
+      margin-bottom: 16px;
+      font-size: 1.4rem;
+    }
+    .admin-field {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 14px;
+      gap: 6px;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+    .admin-field input,
+    .admin-field select {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: #0a0a12;
+      color: #fff;
+    }
+    .admin-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
+    .admin-actions button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #a855f7, #6366f1);
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .users-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    .users-table th,
+    .users-table td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .users-table th {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    .users-table td {
+      color: #f9f9f9;
+    }
+    .delete-btn {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #f87171;
+      padding: 8px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .info-box {
+      background: rgba(168,85,247,0.08);
+      border: 1px solid rgba(168,85,247,0.16);
+      border-radius: 18px;
+      padding: 16px 18px;
+      margin-bottom: 24px;
+      color: #d6d6ff;
+    }
+    .admin-footer {
+      margin-top: 32px;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+    @media(max-width: 720px) {
+      .admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .admin-actions {
+        justify-content: stretch;
+      }
+      .admin-actions button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-shell">
+    <header class="admin-header">
+      <div>
+        <p style="color: var(--text-secondary); text-transform: uppercase; letter-spacing: 2px; font-size: 0.85rem; margin-bottom: 8px;">Painel de Administração</p>
+        <h1>Gerenciar Usuários</h1>
+      </div>
+      <div class="buttons">
+        <a class="logout-btn" href="membros.html">Voltar</a>
+        <a class="logout-btn" href="#" onclick="logout()">Sair</a>
+      </div>
+    </header>
+
+    <div class="info-box">
+      <strong>Importante:</strong> Crie usuários com nome e senha. Apenas o usuário <strong>admin</strong> pode acessar este painel.
+    </div>
+
+    <div class="admin-card">
+      <h2>Novo usuário</h2>
+      <form id="userForm">
+        <div class="admin-field">
+          <label for="newUsername">Usuário</label>
+          <input id="newUsername" type="text" placeholder="Nome do usuário" autocomplete="off" />
+        </div>
+        <div class="admin-field">
+          <label for="newPassword">Senha</label>
+          <input id="newPassword" type="password" placeholder="Senha" autocomplete="new-password" />
+        </div>
+        <div class="admin-field">
+          <label for="newRole">Perfil</label>
+          <select id="newRole">
+            <option value="user">Usuário</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+        <div class="admin-actions">
+          <button type="submit">Criar usuário</button>
+        </div>
+        <p class="erro" id="adminError" style="margin-top: 12px;"></p>
+      </form>
+    </div>
+
+    <div class="admin-card">
+      <h2>Alterar senha do admin</h2>
+      <form id="changePasswordForm">
+        <div class="admin-field">
+          <label for="currentPassword">Senha atual</label>
+          <input id="currentPassword" type="password" placeholder="Digite a senha atual" autocomplete="current-password" />
+        </div>
+        <div class="admin-field">
+          <label for="newPassword">Nova senha</label>
+          <input id="newPassword" type="password" placeholder="Digite a nova senha" autocomplete="new-password" />
+        </div>
+        <div class="admin-field">
+          <label for="confirmPassword">Confirmar nova senha</label>
+          <input id="confirmPassword" type="password" placeholder="Confirme a nova senha" autocomplete="new-password" />
+        </div>
+        <div class="admin-actions">
+          <button type="submit">Alterar senha</button>
+        </div>
+        <p class="erro" id="passwordError" style="margin-top: 12px;"></p>
+      </form>
+    </div>
+
+    <div class="admin-card">
+      <h2>Usuários cadastrados</h2>
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Usuário</th>
+            <th>Perfil</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="usersList"></tbody>
+      </table>
+    </div>
+
+    <div class="admin-footer">
+      <p>Os dados são salvos localmente no navegador.</p>
+    </div>
+  </div>
+
+  <script>
+    const USERS_KEY = "devfox_users";
+    const LOGGED_KEY = "logado";
+    const CURRENT_USER_KEY = "currentUser";
+
+    function getUsers() {
+      const stored = localStorage.getItem(USERS_KEY);
+      return stored ? JSON.parse(stored) : [];
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem(USERS_KEY, JSON.stringify(users));
+    }
+
+    function logout() {
+      localStorage.removeItem(LOGGED_KEY);
+      localStorage.removeItem(CURRENT_USER_KEY);
+      window.location.href = "login.html";
+    }
+
+    function redirectToLogin() {
+      window.location.href = "login.html";
+    }
+
+    function renderUsers() {
+      const users = getUsers();
+      const list = document.getElementById("usersList");
+      list.innerHTML = users.map(user => {
+        const disableDelete = user.username === "admin" ? "disabled" : "";
+        return `
+          <tr>
+            <td>${user.username}</td>
+            <td>${user.role === "admin" ? "Administrador" : "Usuário"}</td>
+            <td>
+              <button class="delete-btn" data-user="${user.username}" ${disableDelete}>Remover</button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      document.querySelectorAll(".delete-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const username = btn.dataset.user;
+          if (username === "admin") return;
+          const allowed = confirm(`Remover o usuário ${username}?`);
+          if (!allowed) return;
+          const filtered = getUsers().filter(user => user.username !== username);
+          saveUsers(filtered);
+          renderUsers();
+        });
+      });
+    }
+
+    function initAdmin() {
+      const logged = localStorage.getItem(LOGGED_KEY) === "true";
+      const currentUser = localStorage.getItem(CURRENT_USER_KEY);
+
+      if (!logged || currentUser !== "admin") {
+        redirectToLogin();
+        return;
+      }
+
+      const form = document.getElementById("userForm");
+      const errorEl = document.getElementById("adminError");
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        errorEl.textContent = "";
+
+        const username = document.getElementById("newUsername").value.trim();
+        const password = document.getElementById("newPassword").value;
+        const role = document.getElementById("newRole").value;
+
+        if (!username || !password) {
+          errorEl.textContent = "Preencha usuário e senha.";
+          return;
+        }
+
+        const users = getUsers();
+        if (users.some(u => u.username === username)) {
+          errorEl.textContent = "Este usuário já existe.";
+          return;
+        }
+
+        users.push({ username, password, role });
+        saveUsers(users);
+        form.reset();
+        renderUsers();
+      });
+
+      const changePasswordForm = document.getElementById("changePasswordForm");
+      const passwordErrorEl = document.getElementById("passwordError");
+
+      changePasswordForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        passwordErrorEl.textContent = "";
+
+        const currentPassword = document.getElementById("currentPassword").value;
+        const newPassword = document.getElementById("newPassword").value;
+        const confirmPassword = document.getElementById("confirmPassword").value;
+
+        if (!currentPassword || !newPassword || !confirmPassword) {
+          passwordErrorEl.textContent = "Preencha todos os campos.";
+          return;
+        }
+
+        if (newPassword !== confirmPassword) {
+          passwordErrorEl.textContent = "A nova senha e confirmação não coincidem.";
+          return;
+        }
+
+        const users = getUsers();
+        const adminUser = users.find(user => user.username === "admin");
+
+        if (!adminUser || adminUser.password !== currentPassword) {
+          passwordErrorEl.textContent = "Senha atual incorreta.";
+          return;
+        }
+
+        adminUser.password = newPassword;
+        saveUsers(users);
+        changePasswordForm.reset();
+        passwordErrorEl.textContent = "Senha alterada com sucesso!";
+        passwordErrorEl.style.color = "#10b981";
+      });
+    }
+
+    function ensureDefaultAdmin() {
+      const users = getUsers();
+      if (!users.find(user => user.username === "admin")) {
+        users.push({ username: "admin", password: "123", role: "admin" });
+        saveUsers(users);
+      }
+    }
+
+    ensureDefaultAdmin();
+    renderUsers();
+    initAdmin();
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      ensureDefaultAdmin();
+      renderUsers();
+      initAdmin();
+    });
+  </script>
+</body>
+</html>
